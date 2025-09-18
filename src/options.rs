@@ -12,7 +12,7 @@ pub enum Mode {
 pub struct Options {
     /// 模式
     pub mode: Mode,
-    /// 基准时间
+    /// 基准时间(这个是基于1ms为1个单位)
     pub epoch: u64,
     /// 时间戳位数
     timestamp_bits: u8,

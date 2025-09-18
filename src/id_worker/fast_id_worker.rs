@@ -1,11 +1,12 @@
 use crate::id_worker::id_worker::IdWorker;
 use crate::options::{Mode, Options};
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct FastIdWorker {
     /// 模式
     mode: Mode,
+    /// 基础时间(这个是基于10ms为1个单位)
+    epoch: u64,
     /// 时间戳需要位移的位数
     timestamp_shift: u8,
     /// 工作节点ID
@@ -23,13 +24,7 @@ pub struct FastIdWorker {
 impl FastIdWorker {
     pub fn new(options: Options) -> Self {
         let epoch = options.epoch / 10; // 转换为10毫秒单位
-        // 获取当前毫秒级时间，并转换为10毫秒单位
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_millis() as u64
-            / 10;
-        let timestamp = now - epoch;
+        let timestamp = Self::calc_timestamp(epoch);
         let worker_bits = options.data_center_bits + options.node_bits;
         let worker = ((options.data_center as u16) << options.node_bits) + options.node as u16;
         let sequence_bits = options.sequence_bits;
@@ -39,6 +34,7 @@ impl FastIdWorker {
 
         FastIdWorker {
             mode: options.mode,
+            epoch,
             timestamp_shift,
             worker,
             sequence_bits,
@@ -62,15 +58,7 @@ impl IdWorker for FastIdWorker {
             let sequence = (last_id & self.sequence_mask) as u32;
             let new_id = if sequence == self.max_sequence {
                 let timestamp = match self.mode {
-                    Mode::Faster => {
-                        // 获取当前毫秒级时间，并转换为10毫秒单位
-                        let now = SystemTime::now()
-                            .duration_since(UNIX_EPOCH)
-                            .unwrap()
-                            .as_millis() as u64
-                            / 10;
-                        now >> self.timestamp_shift + 1
-                    }
+                    Mode::Faster => Self::calc_timestamp(self.epoch) >> self.timestamp_shift + 1,
                     _ => last_id >> self.timestamp_shift + 1,
                 };
 
