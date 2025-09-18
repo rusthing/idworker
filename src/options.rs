@@ -30,6 +30,7 @@ pub struct Options {
 
 /// 默认的基准时间
 const EPOCH_DEFAULT: u64 = 1758159446615;
+/// 默认时间戳位数
 const TIMESTAMP_BITS_DEFAULT: u8 = 42;
 
 impl Options {
