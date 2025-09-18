@@ -10,5 +10,5 @@ authors = ["zbz"]
 criterion = "0.7.0"
 
 [[bench]]
-name = "id_benches"
+name = "fast_benches"
 harness = false

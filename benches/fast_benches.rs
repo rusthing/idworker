@@ -1,4 +1,4 @@
-// benches/id_benches.rs
+// benches/fast_benches
 use criterion::{criterion_group, criterion_main, Criterion};
 use idworker::generator::Generator;
 use idworker::options::Options;
