@@ -5,7 +5,7 @@ mod options_tests {
     #[test]
     fn test_new_option() {
         Options::new();
-        Options::new().epoch(1).data_center(7, 3).worker(1, 1);
+        Options::new().epoch(1).data_center(7, 3).node(1, 1);
     }
 
     #[test]
@@ -22,13 +22,13 @@ mod options_tests {
 
     #[test]
     #[should_panic]
-    fn test_worker_out_of_range1() {
-        Options::new().worker(0, 9); // 超出范围的worker ID
+    fn test_node_out_of_range1() {
+        Options::new().node(0, 9); // 超出范围的node ID
     }
 
     #[test]
     #[should_panic]
-    fn test_worker_out_of_range2() {
-        Options::new().worker(1, 0); // 超出范围的worker ID
+    fn test_node_out_of_range2() {
+        Options::new().node(1, 0); // 超出范围的node ID
     }
 }

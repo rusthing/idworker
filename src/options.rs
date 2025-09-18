@@ -1,3 +1,5 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 pub struct Options {
     /// 基准时间
     pub epoch: u64,
@@ -5,10 +7,10 @@ pub struct Options {
     pub data_center: u8,
     /// 数据中心ID位数
     pub data_center_bits: u8,
-    /// 工作者ID
-    pub worker: u8,
-    /// 工作者ID位数
-    pub worker_bits: u8,
+    /// 节点ID
+    pub node: u8,
+    /// 节点ID位数
+    pub node_bits: u8,
 }
 
 /// 默认的基准时间
@@ -20,12 +22,20 @@ impl Options {
             epoch: EPOCH_DEFAULT,
             data_center: 0,
             data_center_bits: 0,
-            worker: 0,
-            worker_bits: 3,
+            node: 0,
+            node_bits: 3,
         }
     }
 
     pub fn epoch(mut self, epoch: u64) -> Self {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis() as u64;
+
+        if epoch > now {
+            panic!("epoch {} cannot be greater than current timestamp", epoch);
+        }
         self.epoch = epoch;
         self
     }
@@ -49,16 +59,16 @@ impl Options {
         self
     }
 
-    pub fn worker(mut self, worker: u8, worker_bits: u8) -> Self {
-        if worker_bits > 8 {
-            panic!("worker_bits {} is out of range for u8", worker_bits)
+    pub fn node(mut self, node: u8, node_bits: u8) -> Self {
+        if node_bits > 8 {
+            panic!("node_bits {} is out of range for u8", node_bits)
         }
-        let max_worker = (1u16 << worker_bits) - 1;
-        if worker as u16 > max_worker {
-            panic!("worker {} is out of range for {} bits", worker, worker_bits);
+        let max_node = (1u16 << node_bits) - 1;
+        if node as u16 > max_node {
+            panic!("node {} is out of range for {} bits", node, node_bits);
         }
-        self.worker = worker;
-        self.worker_bits = worker_bits;
+        self.node = node;
+        self.node_bits = node_bits;
         self
     }
 }
