@@ -1,0 +1,108 @@
+= idworker
+
+A high-performance distributed ID generator library for Rust, implementing Snowflake algorithm variants with multiple optimization modes for different performance requirements.
+
+== Overview
+
+`idworker` is a Rust library that provides efficient, distributed unique ID generation. It's based on the Snowflake algorithm but includes several optimizations for different performance scenarios. The library is designed for use in distributed systems where globally unique identifiers are needed.
+
+== Features
+
+* Multiple ID generation algorithms:
+** Standard Snowflake implementation
+** Optimized Fast ID Worker variants
+* Three performance modes:
+** `Normal` - Standard performance mode
+** `Faster` - High-performance optimized mode
+** `Fastest` - Maximum performance mode
+* Thread-safe ID generation
+* Configurable parameters (timestamps, data centers, nodes)
+* Comprehensive benchmark tests
+* Zero dependencies in production code
+
+== Installation
+
+Add this to your [Cargo.toml](file:///Users/zbz/workspace/rusthing/idworker/Cargo.toml):
+
+[source,toml]
+----
+[dependencies]
+idworker = "0.1.0"
+----
+
+== Usage
+
+=== Basic Usage
+
+[source,rust]
+----
+use idworker::generator::IdWorkerGenerator;
+use idworker::options::{Mode, Options};
+
+fn main() {
+    let options = Options::new()
+        .mode(Mode::Normal)
+        .epoch(1609459200000) // Custom epoch timestamp
+        .data_center(1, 5)   // data_center_id, data_center_bits
+        .node(1, 5);         // node_id, node_bits
+
+    let id_worker = IdWorkerGenerator::generate(options);
+    let id = id_worker.next_id();
+    println!("Generated ID: {}", id);
+}
+----
+
+=== Performance Modes
+
+[source,rust]
+----
+// Normal mode - Standard performance
+let normal_options = Options::new().mode(Mode::Normal);
+let normal_worker = IdWorkerGenerator::generate(normal_options);
+
+// Faster mode - High performance
+let faster_options = Options::new().mode(Mode::Faster);
+let faster_worker = IdWorkerGenerator::generate(faster_options);
+
+// Fastest mode - Maximum performance
+let fastest_options = Options::new().mode(Mode::Fastest);
+let fastest_worker = IdWorkerGenerator::generate(fastest_options);
+----
+
+== Performance
+
+The library includes comprehensive benchmarks using Criterion.rs. Run benchmarks with:
+
+[source,bash]
+----
+cargo bench
+----
+
+== Thread Safety
+
+All ID generators are thread-safe and can be used across multiple threads:
+
+[source,rust]
+----
+use std::sync::Arc;
+use std::thread;
+
+let id_worker = Arc::new(IdWorkerGenerator::generate(options));
+let mut handles = vec![];
+
+for _ in 0..10 {
+    let worker = Arc::clone(&id_worker);
+    let handle = thread::spawn(move || {
+        worker.next_id()
+    });
+    handles.push(handle);
+}
+----
+
+== License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+== Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
