@@ -3,6 +3,9 @@ name = "idworker"
 version = "0.1.0"
 edition = "2024"
 authors = ["zbz"]
+description = "A high-performance distributed ID generator library implementing Snowflake algorithm variants with multiple optimization modes for different performance requirements."
+license = "MIT"
+homepage = "https://github.com/rusthing/idworker"
 
 [dependencies]
 
