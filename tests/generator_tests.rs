@@ -1,7 +1,6 @@
 #[cfg(test)]
 mod generator_tests {
-    use idworker::generator::IdWorkerGenerator;
-    use idworker::options::{Mode, Options};
+    use idworker::{IdWorkerGenerator, Mode, Options};
     use std::sync::Arc;
     use std::thread;
 

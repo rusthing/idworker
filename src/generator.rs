@@ -1,6 +1,6 @@
-use crate::id_worker::fast_id_worker::FastIdWorker;
-use crate::id_worker::id_worker::IdWorker;
-use crate::id_worker::snowflake_id_worker::SnowflakeIdWorker;
+use crate::id_worker::IdWorker;
+use crate::internal::fast_id_worker::FastIdWorker;
+use crate::internal::snowflake_id_worker::SnowflakeIdWorker;
 use crate::options::{Mode, Options};
 
 pub struct IdWorkerGenerator {}

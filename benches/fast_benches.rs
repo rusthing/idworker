@@ -1,7 +1,6 @@
 // benches/fast_benches
 use criterion::{criterion_group, criterion_main, Criterion};
-use idworker::generator::IdWorkerGenerator;
-use idworker::options::{Mode, Options};
+use idworker::{IdWorkerGenerator, Mode, Options};
 use std::sync::{Arc, Mutex};
 use std::thread;
 

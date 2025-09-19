@@ -1,5 +1,5 @@
-use crate::id_worker::id_worker::IdWorker;
-use crate::id_worker::id_worker_utils::IdWorkerUtils;
+use crate::id_worker::IdWorker;
+use crate::internal::id_worker_utils::IdWorkerUtils;
 use crate::options::Options;
 use std::sync::atomic::{AtomicU32, Ordering};
 

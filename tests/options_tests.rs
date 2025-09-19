@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod options_tests {
-    use idworker::options::Options;
+    use idworker::Options;
 
     #[test]
     fn test_new_option() {
