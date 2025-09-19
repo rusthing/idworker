@@ -1,5 +1,6 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
+#[derive(Clone)]
 pub enum Mode {
     /// 普通模式(优化的雪花算法)
     Normal,
@@ -9,6 +10,7 @@ pub enum Mode {
     Fastest,
 }
 
+#[derive(Clone)]
 pub struct Options {
     /// 模式
     pub mode: Mode,

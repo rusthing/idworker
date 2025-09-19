@@ -1,12 +1,13 @@
 // benches/fast_benches
 use criterion::{criterion_group, criterion_main, Criterion};
 use idworker::generator::IdWorkerGenerator;
-use idworker::options::Options;
+use idworker::options::{Mode, Options};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
 fn bench_single_thread_id_generation(c: &mut Criterion) {
     let options = Options::new()
+        .mode(Mode::Fastest)
         .epoch(1758159446615)
         .data_center(1, 5)
         .node(1, 5);
@@ -20,6 +21,7 @@ fn bench_single_thread_id_generation(c: &mut Criterion) {
 
 fn bench_multi_thread_id_generation(c: &mut Criterion) {
     let options = Options::new()
+        .mode(Mode::Fastest)
         .epoch(1758159446615)
         .data_center(1, 5)
         .node(1, 5);
@@ -48,6 +50,7 @@ fn bench_multi_thread_id_generation(c: &mut Criterion) {
 
 fn bench_id_generation_throughput(c: &mut Criterion) {
     let options = Options::new()
+        .mode(Mode::Fastest)
         .epoch(1758159446615)
         .data_center(1, 5)
         .node(1, 5);
