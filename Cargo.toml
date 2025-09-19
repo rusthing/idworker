@@ -1,11 +1,15 @@
 [package]
 name = "idworker"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 authors = ["zbz"]
+keywords = ["id", "idworker", "generator", "idgenerator", "snowflake"]
 description = "A high-performance distributed ID generator library implementing Snowflake algorithm variants with multiple optimization modes for different performance requirements."
+categories = ["algorithms"]
 license = "MIT"
 homepage = "https://github.com/rusthing/idworker"
+repository = "https://github.com/rusthing/idworker"
+readme = "README.adoc"
 
 [dependencies]
 

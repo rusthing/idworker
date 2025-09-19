@@ -27,7 +27,7 @@ Add this to your [Cargo.toml](file:///Users/zbz/workspace/rusthing/idworker/Carg
 [source,toml]
 ----
 [dependencies]
-idworker = "0.1.0"
+idworker = "0.1.1"
 ----
 
 == Usage
