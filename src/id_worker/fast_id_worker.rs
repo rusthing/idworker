@@ -1,4 +1,5 @@
 use crate::id_worker::id_worker::IdWorker;
+use crate::id_worker::id_worker_utils::IdWorkerUtils;
 use crate::options::{Mode, Options};
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -24,7 +25,7 @@ pub struct FastIdWorker {
 impl FastIdWorker {
     pub fn new(options: Options) -> Self {
         let epoch = options.epoch / 10; // 转换为10毫秒单位
-        let timestamp = Self::calc_timestamp(epoch);
+        let timestamp = IdWorkerUtils::calc_timestamp(epoch);
         let worker_bits = options.data_center_bits + options.node_bits;
         let worker = ((options.data_center as u16) << options.node_bits) + options.node as u16;
         let sequence_bits = options.sequence_bits;
@@ -40,7 +41,7 @@ impl FastIdWorker {
             sequence_bits,
             sequence_mask,
             max_sequence,
-            last_id: AtomicU64::new(Self::calc_id(
+            last_id: AtomicU64::new(IdWorkerUtils::calc_id(
                 timestamp,
                 timestamp_shift,
                 worker,
@@ -58,11 +59,13 @@ impl IdWorker for FastIdWorker {
             let sequence = (last_id & self.sequence_mask) as u32;
             let new_id = if sequence == self.max_sequence {
                 let timestamp = match self.mode {
-                    Mode::Faster => Self::calc_timestamp(self.epoch) >> self.timestamp_shift + 1,
+                    Mode::Faster => {
+                        IdWorkerUtils::calc_timestamp(self.epoch) >> self.timestamp_shift + 1
+                    }
                     _ => last_id >> self.timestamp_shift + 1,
                 };
 
-                FastIdWorker::calc_id(
+                IdWorkerUtils::calc_id(
                     timestamp,
                     self.timestamp_shift,
                     self.worker,
