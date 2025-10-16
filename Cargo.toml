@@ -1,6 +1,6 @@
 [package]
 name = "idworker"
-version = "0.3.2"
+version = "0.3.3"
 edition = "2024"
 authors = ["zbz"]
 keywords = ["id", "idworker", "generator", "idgenerator", "snowflake"]
@@ -16,7 +16,7 @@ default = []
 settings = ["dep:serde"]
 
 [dependencies]
-serde = { version = "1.0.225", features = ["derive"], optional = true }
+serde = { version = "1.0.228", features = ["derive"], optional = true }
 
 [dev-dependencies]
 criterion = "0.7.0"
