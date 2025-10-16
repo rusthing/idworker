@@ -9,3 +9,5 @@ pub use generator::IdWorkerGenerator;
 pub use id_worker::IdWorker;
 pub use options::Mode;
 pub use options::Options;
+#[cfg(feature = "settings")]
+pub use id_worker_settings::IdWorkerSettings;
