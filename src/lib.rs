@@ -1,5 +1,7 @@
 mod generator;
 mod id_worker;
+#[cfg(feature = "settings")]
+pub mod id_worker_settings;
 mod internal;
 mod options;
 

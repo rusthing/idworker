@@ -1,6 +1,6 @@
 [package]
 name = "idworker"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2024"
 authors = ["zbz"]
 keywords = ["id", "idworker", "generator", "idgenerator", "snowflake"]
@@ -11,7 +11,12 @@ homepage = "https://github.com/rusthing/idworker"
 repository = "https://github.com/rusthing/idworker"
 readme = "README.adoc"
 
+[features]
+default = []
+settings = ["dep:serde"]
+
 [dependencies]
+serde = { version = "1.0.225", features = ["derive"], optional = true }
 
 [dev-dependencies]
 criterion = "0.7.0"
