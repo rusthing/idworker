@@ -1,6 +1,6 @@
 [package]
 name = "idworker"
-version = "0.3.4"
+version = "0.3.5"
 edition = "2024"
 authors = ["zbz"]
 keywords = ["id", "idworker", "generator", "idgenerator", "snowflake"]
@@ -13,9 +13,10 @@ readme = "README.adoc"
 
 [features]
 default = []
-settings = ["dep:serde"]
+settings = ["dep:log", "dep:serde"]
 
 [dependencies]
+log = { version = "0.4.28", optional = true }
 serde = { version = "1.0.228", features = ["derive"], optional = true }
 
 [dev-dependencies]

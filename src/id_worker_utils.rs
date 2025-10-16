@@ -1,4 +1,5 @@
 use crate::{IdWorker, IdWorkerGenerator, IdWorkerSettings, Options};
+use log::info;
 use std::sync::OnceLock;
 
 pub static ID_WORKER: OnceLock<Box<dyn IdWorker>> = OnceLock::new();
