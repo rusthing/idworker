@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "kebab-case")]
-pub struct IdWorkerSettings {
+pub struct IdWorkerConfig {
     /// 基准时间(基于1ms为1个单位)
     #[serde(default = "epoch_default")]
     pub epoch: u64,
@@ -20,9 +20,9 @@ pub struct IdWorkerSettings {
     pub node_bits: u8,
 }
 
-impl Default for IdWorkerSettings {
+impl Default for IdWorkerConfig {
     fn default() -> Self {
-        IdWorkerSettings {
+        IdWorkerConfig {
             epoch: epoch_default(),
             data_center: data_center_default(),
             data_center_bits: data_center_bits_default(),
