@@ -1,6 +1,7 @@
 use crate::id_worker::IdWorker;
+use crate::id_worker_options::IdWorkerOptions;
 use crate::internal::id_worker_utils::IdWorkerUtils;
-use crate::options::Options;
+use crate::IdWorkerError;
 use std::sync::atomic::{AtomicU32, Ordering};
 
 /// 雪花ID生成器
@@ -24,7 +25,7 @@ pub struct SnowflakeIdWorker {
 }
 
 impl SnowflakeIdWorker {
-    pub fn new(options: Options) -> Self {
+    pub fn new(options: IdWorkerOptions) -> Self {
         let epoch = options.epoch / 10; // 转换为10毫秒单位
         let worker_bits = options.data_center_bits + options.node_bits;
         let worker = ((options.data_center as u16) << options.node_bits) + options.node as u16;
@@ -44,15 +45,15 @@ impl SnowflakeIdWorker {
 }
 
 impl IdWorker for SnowflakeIdWorker {
-    fn next_id(&self) -> u64 {
-        let timestamp = IdWorkerUtils::calc_timestamp(self.epoch);
+    fn next_id(&self) -> Result<u64, IdWorkerError> {
+        let timestamp = IdWorkerUtils::calc_timestamp(self.epoch)?;
         let sequence = self.sequence.fetch_add(1, Ordering::Relaxed) & self.sequence_mask;
-        IdWorkerUtils::calc_id(
+        Ok(IdWorkerUtils::calc_id(
             timestamp,
             self.timestamp_shift,
             self.worker,
             sequence,
             self.sequence_bits,
-        )
+        ))
     }
 }

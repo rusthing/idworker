@@ -1,3 +1,4 @@
+use crate::IdWorkerError;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Clone)]
@@ -11,7 +12,7 @@ pub enum Mode {
 }
 
 #[derive(Clone)]
-pub struct Options {
+pub struct IdWorkerOptions {
     /// 模式
     pub mode: Mode,
     /// 基准时间(这个是基于1ms为1个单位)
@@ -35,12 +36,12 @@ const EPOCH_DEFAULT: u64 = 1758159446615;
 /// 默认时间戳位数
 const TIMESTAMP_BITS_DEFAULT: u8 = 42;
 
-impl Options {
+impl IdWorkerOptions {
     pub fn new() -> Self {
         let data_center_bits = 0;
         let node_bits = 3;
         let timestamp_bits = TIMESTAMP_BITS_DEFAULT;
-        Options {
+        IdWorkerOptions {
             mode: Mode::Normal,
             epoch: EPOCH_DEFAULT,
             timestamp_bits,
@@ -57,62 +58,70 @@ impl Options {
         self
     }
 
-    pub fn epoch(mut self, epoch: u64) -> Self {
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_millis() as u64;
+    pub fn epoch(mut self, epoch: u64) -> Result<Self, IdWorkerError> {
+        let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis() as u64;
 
         if epoch > now {
-            panic!("epoch {} cannot be greater than current timestamp", epoch);
+            Err(IdWorkerError::Option(format!(
+                "epoch {epoch} cannot be greater than current timestamp"
+            )))?;
         }
         self.epoch = epoch;
-        self
+        Ok(self)
     }
 
-    pub fn data_center(mut self, data_center: u8, data_center_bits: u8) -> Self {
+    pub fn data_center(
+        mut self,
+        data_center: u8,
+        data_center_bits: u8,
+    ) -> Result<Self, IdWorkerError> {
         if data_center_bits > 8 {
-            panic!(
-                "data_center_bits {} is out of range for u8",
-                data_center_bits
-            )
+            Err(IdWorkerError::Option(format!(
+                "data_center_bits {data_center_bits} is out of range for u8"
+            )))?;
         }
         let max_data_center = (1u16 << data_center_bits) - 1;
         if data_center as u16 > max_data_center {
-            panic!(
+            Err(IdWorkerError::Option(format!(
                 "data_center {} is out of range for {} bits",
                 data_center, data_center_bits
-            );
+            )))?;
         }
         self.data_center = data_center;
         self.data_center_bits = data_center_bits;
-        self
+        Ok(self)
     }
 
-    pub fn node(mut self, node: u8, node_bits: u8) -> Self {
+    pub fn node(mut self, node: u8, node_bits: u8) -> Result<Self, IdWorkerError> {
         if node_bits > 8 {
-            panic!("node_bits {} is out of range for u8", node_bits)
+            Err(IdWorkerError::Option(format!(
+                "node_bits {} is out of range for u8",
+                node_bits
+            )))?;
         }
         let max_node = (1u16 << node_bits) - 1;
         if node as u16 > max_node {
-            panic!("node {} is out of range for {} bits", node, node_bits);
+            Err(IdWorkerError::Option(format!(
+                "node {} is out of range for {} bits",
+                node, node_bits
+            )))?;
         }
         self.node = node;
         self.node_bits = node_bits;
-        self
+        Ok(self)
     }
 
-    pub fn sequence_bits(mut self, sequence_bits: u8) -> Self {
+    pub fn sequence_bits(mut self, sequence_bits: u8) -> Result<Self, IdWorkerError> {
         let max_sequence_bits =
             Self::calc_sequence_bits(self.timestamp_bits, self.data_center_bits, self.node_bits);
         if sequence_bits > max_sequence_bits {
-            panic!(
+            Err(IdWorkerError::Option(format!(
                 "sequence_bits {} cannot be greater than {}",
                 sequence_bits, max_sequence_bits
-            )
+            )))?;
         }
         self.sequence_bits = sequence_bits;
-        self
+        Ok(self)
     }
 
     pub fn calc_sequence_bits(timestamp_bits: u8, data_center_bits: u8, node_bits: u8) -> u8 {

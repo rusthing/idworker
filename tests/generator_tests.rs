@@ -1,60 +1,82 @@
 #[cfg(test)]
 mod generator_tests {
-    use idworker::{IdWorkerGenerator, Mode, Options};
+    use idworker::{IdWorkerGenerator, IdWorkerOptions, Mode};
     use std::sync::Arc;
     use std::thread;
 
     #[test]
     fn test_normal() {
-        let options = Options::new()
+        let options = IdWorkerOptions::new()
             .mode(Mode::Normal)
             .epoch(1)
+            .expect("Fail to set epoch")
             .data_center(7, 3)
-            .node(1, 1);
+            .expect("Fail to set data center")
+            .node(1, 1)
+            .expect("Fail to set node");
 
-        let id_worker = IdWorkerGenerator::generate(options);
+        let id_worker = IdWorkerGenerator::generate(options).expect("Failed to generate id worker");
         for _ in 0..1000 {
-            println!("id: {}", id_worker.next_id());
+            println!(
+                "id: {}",
+                id_worker.next_id().expect("Failed to generate id")
+            );
         }
     }
 
     #[test]
     fn test_faster() {
-        let options = Options::new()
+        let options = IdWorkerOptions::new()
             .mode(Mode::Faster)
             .epoch(1)
+            .expect("Fail to set epoch")
             .data_center(7, 3)
-            .node(1, 1);
+            .expect("Fail to set data center")
+            .node(1, 1)
+            .expect("Fail to set node");
 
-        let id_worker = IdWorkerGenerator::generate(options);
+        let id_worker = IdWorkerGenerator::generate(options).expect("Failed to generate id worker");
         for _ in 0..1000 {
-            println!("id: {}", id_worker.next_id());
+            println!(
+                "id: {}",
+                id_worker.next_id().expect("Failed to generate id")
+            );
         }
     }
 
     #[test]
     fn test_fastest() {
-        let options = Options::new()
+        let options = IdWorkerOptions::new()
             .mode(Mode::Fastest)
             .epoch(1)
+            .expect("Fail to set epoch")
             .data_center(7, 3)
-            .node(1, 1);
+            .expect("Fail to set data center")
+            .node(1, 1)
+            .expect("Fail to set node");
 
-        let id_worker = IdWorkerGenerator::generate(options);
+        let id_worker = IdWorkerGenerator::generate(options).expect("Failed to generate id worker");
         for _ in 0..1000 {
-            println!("id: {}", id_worker.next_id());
+            println!(
+                "id: {}",
+                id_worker.next_id().expect("Failed to generate id")
+            );
         }
     }
 
     #[test]
     fn test_normal_multithread() {
-        let options = Options::new()
+        let options = IdWorkerOptions::new()
             .mode(Mode::Normal)
             .epoch(1)
+            .expect("Fail to set epoch")
             .data_center(7, 3)
-            .node(1, 1);
+            .expect("Fail to set data center")
+            .node(1, 1)
+            .expect("Fail to set node");
 
-        let id_worker = Arc::new(IdWorkerGenerator::generate(options));
+        let id_worker =
+            Arc::new(IdWorkerGenerator::generate(options).expect("Failed to generate id worker"));
         let mut handles = vec![];
 
         for _ in 0..10 {
@@ -62,7 +84,7 @@ mod generator_tests {
             let handle = thread::spawn(move || {
                 let mut ids = Vec::new();
                 for _ in 0..100 {
-                    ids.push(worker.next_id());
+                    ids.push(worker.next_id().expect("Failed to generate id"));
                 }
                 ids
             });
@@ -85,13 +107,17 @@ mod generator_tests {
 
     #[test]
     fn test_faster_multithread() {
-        let options = Options::new()
+        let options = IdWorkerOptions::new()
             .mode(Mode::Faster)
             .epoch(1)
+            .expect("Fail to set epoch")
             .data_center(7, 3)
-            .node(1, 1);
+            .expect("Fail to set data center")
+            .node(1, 1)
+            .expect("Fail to set node");
 
-        let id_worker = Arc::new(IdWorkerGenerator::generate(options));
+        let id_worker =
+            Arc::new(IdWorkerGenerator::generate(options).expect("Failed to generate id worker"));
         let mut handles = vec![];
 
         for _ in 0..10 {
@@ -99,7 +125,7 @@ mod generator_tests {
             let handle = thread::spawn(move || {
                 let mut ids = Vec::new();
                 for _ in 0..100 {
-                    ids.push(worker.next_id());
+                    ids.push(worker.next_id().expect("Failed to generate id"));
                 }
                 ids
             });
@@ -122,13 +148,17 @@ mod generator_tests {
 
     #[test]
     fn test_fastest_multithread() {
-        let options = Options::new()
+        let options = IdWorkerOptions::new()
             .mode(Mode::Fastest)
             .epoch(1)
+            .expect("Fail to set epoch")
             .data_center(7, 3)
-            .node(1, 1);
+            .expect("Fail to set data center")
+            .node(1, 1)
+            .expect("Fail to set node");
 
-        let id_worker = Arc::new(IdWorkerGenerator::generate(options));
+        let id_worker =
+            Arc::new(IdWorkerGenerator::generate(options).expect("Failed to generate id worker"));
         let mut handles = vec![];
 
         for _ in 0..10 {
@@ -136,7 +166,7 @@ mod generator_tests {
             let handle = thread::spawn(move || {
                 let mut ids = Vec::new();
                 for _ in 0..100 {
-                    ids.push(worker.next_id());
+                    ids.push(worker.next_id().expect("Failed to generate id"));
                 }
                 ids
             });

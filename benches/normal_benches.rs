@@ -1,38 +1,50 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use idworker::{IdWorkerGenerator, Mode, Options};
+use idworker::{IdWorkerGenerator, IdWorkerOptions, Mode};
 use std::hint::black_box;
 
 fn bench_fast_id_worker_normal(c: &mut Criterion) {
-    let options = Options::new().mode(Mode::Fastest).epoch(1758159446615);
-    let id_worker = IdWorkerGenerator::generate(options);
+    let options = IdWorkerOptions::new()
+        .mode(Mode::Fastest)
+        .epoch(1758159446615)
+        .expect("Failed to set epoch");
+    let id_worker = IdWorkerGenerator::generate(options).expect("Failed to generate id worker");
 
     c.bench_function("fast_id_worker_normal", |b| {
-        b.iter(|| black_box(id_worker.next_id()))
+        b.iter(|| black_box(id_worker.next_id().expect("Failed to generate id")))
     });
 }
 
 fn bench_snowflake_id_worker_normal(c: &mut Criterion) {
-    let options = Options::new().mode(Mode::Normal).epoch(1758159446615);
+    let options = IdWorkerOptions::new()
+        .mode(Mode::Normal)
+        .epoch(1758159446615)
+        .expect("Failed to set epoch");
 
-    let id_worker = IdWorkerGenerator::generate(options);
+    let id_worker = IdWorkerGenerator::generate(options).expect("Failed to generate id worker");
 
     c.bench_function("snowflake_id_worker_normal", |b| {
-        b.iter(|| black_box(id_worker.next_id()))
+        b.iter(|| black_box(id_worker.next_id().expect("Failed to generate id")))
     });
 }
 
 fn bench_multiple_workers_normal(c: &mut Criterion) {
-    let options1 = Options::new().mode(Mode::Normal).epoch(1758159446615);
-    let options2 = Options::new().mode(Mode::Fastest).epoch(1758159446615);
-    let id_worker1 = IdWorkerGenerator::generate(options1);
-    let id_worker2 = IdWorkerGenerator::generate(options2);
+    let options1 = IdWorkerOptions::new()
+        .mode(Mode::Normal)
+        .epoch(1758159446615)
+        .expect("Failed to set epoch");
+    let options2 = IdWorkerOptions::new()
+        .mode(Mode::Fastest)
+        .epoch(1758159446615)
+        .expect("Failed to set epoch");
+    let id_worker1 = IdWorkerGenerator::generate(options1).expect("Failed to generate id worker");
+    let id_worker2 = IdWorkerGenerator::generate(options2).expect("Failed to generate id worker");
 
     let id_workers = vec![&id_worker1, &id_worker2];
 
     c.bench_function("multiple_workers_normal", |b| {
         b.iter(|| {
             for id_worker in &id_workers {
-                black_box(id_worker.next_id());
+                black_box(id_worker.next_id().expect("Failed to generate id"));
             }
         })
     });
