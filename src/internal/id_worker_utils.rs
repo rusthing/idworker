@@ -23,10 +23,10 @@ impl IdWorkerUtils {
         worker: u16,
         sequence: u32,
         sequence_bits: u8,
-    ) -> i64
+    ) -> u64
     where
         Self: Sized,
     {
-        (timestamp << timestamp_shift | (worker as u64) << sequence_bits | sequence as u64) as i64
+        timestamp << timestamp_shift | (worker as u64) << sequence_bits | sequence as u64
     }
 }

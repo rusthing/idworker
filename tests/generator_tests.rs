@@ -105,7 +105,7 @@ mod generator_tests {
         assert_eq!(all_ids.len(), 1000);
 
         // 验证 ID 的唯一性
-        let unique_ids: std::collections::HashSet<i64> = all_ids.into_iter().collect();
+        let unique_ids: std::collections::HashSet<u64> = all_ids.into_iter().collect();
         assert_eq!(unique_ids.len(), 1000);
     }
 
@@ -147,7 +147,7 @@ mod generator_tests {
         assert_eq!(all_ids.len(), 1000);
 
         // 验证 ID 的唯一性
-        let unique_ids: std::collections::HashSet<i64> = all_ids.into_iter().collect();
+        let unique_ids: std::collections::HashSet<u64> = all_ids.into_iter().collect();
         assert_eq!(unique_ids.len(), 1000);
     }
 
@@ -189,7 +189,7 @@ mod generator_tests {
         assert_eq!(all_ids.len(), 1000);
 
         // 验证 ID 的唯一性
-        let unique_ids: std::collections::HashSet<i64> = all_ids.into_iter().collect();
+        let unique_ids: std::collections::HashSet<u64> = all_ids.into_iter().collect();
         assert_eq!(unique_ids.len(), 1000);
     }
 }

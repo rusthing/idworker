@@ -2,7 +2,7 @@ use crate::id_worker::IdWorker;
 use crate::id_worker_config::{IdWorkerConfig, Mode};
 use crate::internal::id_worker_utils::IdWorkerUtils;
 use crate::IdWorkerError;
-use std::sync::atomic::{AtomicI64, Ordering};
+use std::sync::atomic::{AtomicU64, Ordering};
 
 pub struct FastIdWorker {
     /// 模式
@@ -22,7 +22,7 @@ pub struct FastIdWorker {
     /// 最大序列号
     max_sequence: u32,
     /// 最后一个ID
-    last_id: AtomicI64,
+    last_id: AtomicU64,
 }
 
 impl FastIdWorker {
@@ -54,7 +54,7 @@ impl FastIdWorker {
             sequence_bits,
             sequence_mask,
             max_sequence,
-            last_id: AtomicI64::new(IdWorkerUtils::calc_id(
+            last_id: AtomicU64::new(IdWorkerUtils::calc_id(
                 timestamp,
                 timestamp_shift,
                 worker,
@@ -66,9 +66,9 @@ impl FastIdWorker {
 }
 
 impl IdWorker for FastIdWorker {
-    fn next_id(&self) -> Result<i64, IdWorkerError> {
+    fn next_id(&self) -> Result<u64, IdWorkerError> {
         loop {
-            let last_id = self.last_id.load(Ordering::Relaxed) as u64;
+            let last_id = self.last_id.load(Ordering::Relaxed);
             let sequence = (last_id & self.sequence_mask) as u32;
             let new_id = if sequence == self.max_sequence {
                 let timestamp = match self.mode {
@@ -87,10 +87,10 @@ impl IdWorker for FastIdWorker {
                     self.sequence_bits,
                 )
             } else {
-                (last_id + 1) as i64
+                last_id + 1
             };
             match self.last_id.compare_exchange_weak(
-                last_id as i64,    // 当前值
+                last_id,           // 当前值
                 new_id,            // 新值
                 Ordering::Relaxed, // 成功时的内存顺序
                 Ordering::Relaxed, // 失败时的内存顺序

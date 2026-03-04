@@ -56,7 +56,7 @@ impl SnowflakeIdWorker {
 }
 
 impl IdWorker for SnowflakeIdWorker {
-    fn next_id(&self) -> Result<i64, IdWorkerError> {
+    fn next_id(&self) -> Result<u64, IdWorkerError> {
         let timestamp = IdWorkerUtils::calc_timestamp(self.epoch, self.epoch_precision)?;
         let sequence = self.sequence.fetch_add(1, Ordering::Relaxed) & self.sequence_mask;
         Ok(IdWorkerUtils::calc_id(
