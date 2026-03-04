@@ -1,13 +1,14 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use idworker::{IdWorkerGenerator, IdWorkerOptions, Mode};
+use idworker::{IdWorkerConfig, IdWorkerGenerator, Mode};
 use std::hint::black_box;
 
 fn bench_fast_id_worker_normal(c: &mut Criterion) {
-    let options = IdWorkerOptions::new()
+    let config = IdWorkerConfig::builder()
         .mode(Mode::Fastest)
         .epoch(1758159446615)
-        .expect("Failed to set epoch");
-    let id_worker = IdWorkerGenerator::generate(options).expect("Failed to generate id worker");
+        .build()
+        .expect("Failed to build id worker config");
+    let id_worker = IdWorkerGenerator::generate(config).expect("Failed to generate id worker");
 
     c.bench_function("fast_id_worker_normal", |b| {
         b.iter(|| black_box(id_worker.next_id().expect("Failed to generate id")))
@@ -15,12 +16,13 @@ fn bench_fast_id_worker_normal(c: &mut Criterion) {
 }
 
 fn bench_snowflake_id_worker_normal(c: &mut Criterion) {
-    let options = IdWorkerOptions::new()
+    let config = IdWorkerConfig::builder()
         .mode(Mode::Normal)
         .epoch(1758159446615)
-        .expect("Failed to set epoch");
+        .build()
+        .expect("Failed to build id worker config");
 
-    let id_worker = IdWorkerGenerator::generate(options).expect("Failed to generate id worker");
+    let id_worker = IdWorkerGenerator::generate(config).expect("Failed to generate id worker");
 
     c.bench_function("snowflake_id_worker_normal", |b| {
         b.iter(|| black_box(id_worker.next_id().expect("Failed to generate id")))
@@ -28,16 +30,20 @@ fn bench_snowflake_id_worker_normal(c: &mut Criterion) {
 }
 
 fn bench_multiple_workers_normal(c: &mut Criterion) {
-    let options1 = IdWorkerOptions::new()
+    let config1 = IdWorkerConfig::builder()
         .mode(Mode::Normal)
         .epoch(1758159446615)
-        .expect("Failed to set epoch");
-    let options2 = IdWorkerOptions::new()
+        .build()
+        .expect("Failed to build id worker config");
+
+    let config2 = IdWorkerConfig::builder()
         .mode(Mode::Fastest)
         .epoch(1758159446615)
-        .expect("Failed to set epoch");
-    let id_worker1 = IdWorkerGenerator::generate(options1).expect("Failed to generate id worker");
-    let id_worker2 = IdWorkerGenerator::generate(options2).expect("Failed to generate id worker");
+        .build()
+        .expect("Failed to build id worker config");
+
+    let id_worker1 = IdWorkerGenerator::generate(config1).expect("Failed to generate id worker");
+    let id_worker2 = IdWorkerGenerator::generate(config2).expect("Failed to generate id worker");
 
     let id_workers = vec![&id_worker1, &id_worker2];
 

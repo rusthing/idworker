@@ -1,14 +1,16 @@
 use crate::id_worker::IdWorker;
-use crate::id_worker_options::{IdWorkerOptions, Mode};
+use crate::id_worker_config::{IdWorkerConfig, Mode};
 use crate::internal::id_worker_utils::IdWorkerUtils;
 use crate::IdWorkerError;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicI64, Ordering};
 
 pub struct FastIdWorker {
     /// 模式
     mode: Mode,
     /// 基础时间(这个是基于10ms为1个单位)
     epoch: u64,
+    /// 时间戳精度
+    epoch_precision: i8,
     /// 时间戳需要位移的位数
     timestamp_shift: u8,
     /// 工作节点ID
@@ -20,29 +22,39 @@ pub struct FastIdWorker {
     /// 最大序列号
     max_sequence: u32,
     /// 最后一个ID
-    last_id: AtomicU64,
+    last_id: AtomicI64,
 }
 
 impl FastIdWorker {
-    pub fn new(options: IdWorkerOptions) -> Result<Self, IdWorkerError> {
-        let epoch = options.epoch / 10; // 转换为10毫秒单位
-        let timestamp = IdWorkerUtils::calc_timestamp(epoch)?;
-        let worker_bits = options.data_center_bits + options.node_bits;
-        let worker = ((options.data_center as u16) << options.node_bits) + options.node as u16;
-        let sequence_bits = options.sequence_bits;
+    pub fn new(config: IdWorkerConfig) -> Result<Self, IdWorkerError> {
+        let IdWorkerConfig {
+            mode,
+            epoch,
+            epoch_precision,
+            data_center,
+            data_center_bits,
+            node,
+            node_bits,
+            sequence_bits,
+        } = config;
+
+        let timestamp = IdWorkerUtils::calc_timestamp(epoch, epoch_precision)?;
+        let worker_bits = data_center_bits + node_bits;
+        let worker = ((data_center as u16) << node_bits) + node as u16;
         let sequence_mask = (1 << sequence_bits) - 1;
         let timestamp_shift = worker_bits + sequence_bits;
         let max_sequence = (1 << sequence_bits) - 1;
 
         Ok(FastIdWorker {
-            mode: options.mode,
+            mode,
             epoch,
+            epoch_precision,
             timestamp_shift,
             worker,
             sequence_bits,
             sequence_mask,
             max_sequence,
-            last_id: AtomicU64::new(IdWorkerUtils::calc_id(
+            last_id: AtomicI64::new(IdWorkerUtils::calc_id(
                 timestamp,
                 timestamp_shift,
                 worker,
@@ -54,14 +66,15 @@ impl FastIdWorker {
 }
 
 impl IdWorker for FastIdWorker {
-    fn next_id(&self) -> Result<u64, IdWorkerError> {
+    fn next_id(&self) -> Result<i64, IdWorkerError> {
         loop {
-            let last_id = self.last_id.load(Ordering::Relaxed);
+            let last_id = self.last_id.load(Ordering::Relaxed) as u64;
             let sequence = (last_id & self.sequence_mask) as u32;
             let new_id = if sequence == self.max_sequence {
                 let timestamp = match self.mode {
                     Mode::Faster => {
-                        IdWorkerUtils::calc_timestamp(self.epoch)? >> self.timestamp_shift + 1
+                        IdWorkerUtils::calc_timestamp(self.epoch, self.epoch_precision)?
+                            >> self.timestamp_shift + 1
                     }
                     _ => last_id >> self.timestamp_shift + 1,
                 };
@@ -74,10 +87,10 @@ impl IdWorker for FastIdWorker {
                     self.sequence_bits,
                 )
             } else {
-                last_id + 1
+                (last_id + 1) as i64
             };
             match self.last_id.compare_exchange_weak(
-                last_id,           // 当前值
+                last_id as i64,    // 当前值
                 new_id,            // 新值
                 Ordering::Relaxed, // 成功时的内存顺序
                 Ordering::Relaxed, // 失败时的内存顺序

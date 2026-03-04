@@ -1,20 +1,21 @@
 // benches/fast_benches
 use criterion::{criterion_group, criterion_main, Criterion};
-use idworker::{IdWorkerGenerator, IdWorkerOptions, Mode};
+use idworker::{IdWorkerConfig, IdWorkerGenerator, Mode};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
 fn bench_single_thread_id_generation(c: &mut Criterion) {
-    let options = IdWorkerOptions::new()
+    let config = IdWorkerConfig::builder()
         .mode(Mode::Fastest)
         .epoch(1758159446615)
-        .expect("Failed to set epoch")
-        .data_center(1, 5)
-        .expect("Failed to set data center")
-        .node(1, 5)
-        .expect("Failed to set node");
+        .data_center(1)
+        .data_center_bits(5)
+        .node(1)
+        .node_bits(5)
+        .build()
+        .expect("Failed to build id worker config");
 
-    let id_worker = IdWorkerGenerator::generate(options).expect("Failed to generate id worker");
+    let id_worker = IdWorkerGenerator::generate(config).expect("Failed to generate id worker");
 
     c.bench_function("single_thread_id_generation", |b| {
         b.iter(|| id_worker.next_id().expect("Failed to generate id"))
@@ -22,17 +23,18 @@ fn bench_single_thread_id_generation(c: &mut Criterion) {
 }
 
 fn bench_multi_thread_id_generation(c: &mut Criterion) {
-    let options = IdWorkerOptions::new()
+    let config = IdWorkerConfig::builder()
         .mode(Mode::Fastest)
         .epoch(1758159446615)
-        .expect("Failed to set epoch")
-        .data_center(1, 5)
-        .expect("Failed to set data center")
-        .node(1, 5)
-        .expect("Failed to set node");
+        .data_center(1)
+        .data_center_bits(5)
+        .node(1)
+        .node_bits(5)
+        .build()
+        .expect("Failed to build id worker config");
 
     let generator = Arc::new(Mutex::new(
-        IdWorkerGenerator::generate(options).expect("Failed to generate id worker"),
+        IdWorkerGenerator::generate(config).expect("Failed to generate id worker"),
     ));
 
     c.bench_function("multi_thread_id_generation", |b| {
@@ -56,16 +58,17 @@ fn bench_multi_thread_id_generation(c: &mut Criterion) {
 }
 
 fn bench_id_generation_throughput(c: &mut Criterion) {
-    let options = IdWorkerOptions::new()
+    let config = IdWorkerConfig::builder()
         .mode(Mode::Fastest)
         .epoch(1758159446615)
-        .expect("Failed to set epoch")
-        .data_center(1, 5)
-        .expect("Failed to set data center")
-        .node(1, 5)
-        .expect("Failed to set node");
+        .data_center(1)
+        .data_center_bits(5)
+        .node(1)
+        .node_bits(5)
+        .build()
+        .expect("Failed to build id worker config");
 
-    let generator = IdWorkerGenerator::generate(options).expect("Failed to generate id worker");
+    let generator = IdWorkerGenerator::generate(config).expect("Failed to generate id worker");
 
     c.bench_function("id_generation_throughput", |b| {
         b.iter(|| {

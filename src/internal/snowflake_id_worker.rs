@@ -1,5 +1,5 @@
 use crate::id_worker::IdWorker;
-use crate::id_worker_options::IdWorkerOptions;
+use crate::id_worker_config::IdWorkerConfig;
 use crate::internal::id_worker_utils::IdWorkerUtils;
 use crate::IdWorkerError;
 use std::sync::atomic::{AtomicU32, Ordering};
@@ -12,6 +12,8 @@ use std::sync::atomic::{AtomicU32, Ordering};
 pub struct SnowflakeIdWorker {
     /// 基础时间(这个是基于10ms为1个单位)
     epoch: u64,
+    /// 时间戳精度
+    epoch_precision: i8,
     /// 时间戳需要位移的位数
     timestamp_shift: u8,
     /// 工作节点ID
@@ -25,16 +27,25 @@ pub struct SnowflakeIdWorker {
 }
 
 impl SnowflakeIdWorker {
-    pub fn new(options: IdWorkerOptions) -> Self {
-        let epoch = options.epoch / 10; // 转换为10毫秒单位
-        let worker_bits = options.data_center_bits + options.node_bits;
-        let worker = ((options.data_center as u16) << options.node_bits) + options.node as u16;
-        let sequence_bits = options.sequence_bits;
+    pub fn new(config: IdWorkerConfig) -> Self {
+        let IdWorkerConfig {
+            epoch,
+            epoch_precision,
+            data_center,
+            data_center_bits,
+            node,
+            node_bits,
+            sequence_bits,
+            ..
+        } = config;
+        let worker_bits = data_center_bits + node_bits;
+        let worker = ((data_center as u16) << config.node_bits) + node as u16;
         let sequence_mask = (1 << sequence_bits) - 1;
         let timestamp_shift = worker_bits + sequence_bits;
 
         SnowflakeIdWorker {
             epoch,
+            epoch_precision,
             timestamp_shift,
             worker,
             sequence_bits,
@@ -45,8 +56,8 @@ impl SnowflakeIdWorker {
 }
 
 impl IdWorker for SnowflakeIdWorker {
-    fn next_id(&self) -> Result<u64, IdWorkerError> {
-        let timestamp = IdWorkerUtils::calc_timestamp(self.epoch)?;
+    fn next_id(&self) -> Result<i64, IdWorkerError> {
+        let timestamp = IdWorkerUtils::calc_timestamp(self.epoch, self.epoch_precision)?;
         let sequence = self.sequence.fetch_add(1, Ordering::Relaxed) & self.sequence_mask;
         Ok(IdWorkerUtils::calc_id(
             timestamp,

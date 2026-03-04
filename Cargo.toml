@@ -11,13 +11,11 @@ homepage = "https://github.com/rusthing/idworker"
 repository = "https://github.com/rusthing/idworker"
 readme = "README.adoc"
 
-[features]
-config = ["dep:log", "dep:serde"]
-
 [dependencies]
 thiserror = "2.0.18"
-log = { version = "0.4.29", optional = true }
-serde = { version = "1.0.228", features = ["derive"], optional = true }
+log = { version = "0.4.29" }
+serde = { version = "1.0.228", features = ["derive"] }
+typed-builder = "0.23.2"
 
 [dev-dependencies]
 criterion = "0.8.2"

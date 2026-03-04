@@ -1,21 +1,22 @@
 #[cfg(test)]
 mod generator_tests {
-    use idworker::{IdWorkerGenerator, IdWorkerOptions, Mode};
+    use idworker::{IdWorkerConfig, IdWorkerGenerator, Mode};
     use std::sync::Arc;
     use std::thread;
 
     #[test]
     fn test_normal() {
-        let options = IdWorkerOptions::new()
+        let config = IdWorkerConfig::builder()
             .mode(Mode::Normal)
             .epoch(1)
-            .expect("Fail to set epoch")
-            .data_center(7, 3)
-            .expect("Fail to set data center")
-            .node(1, 1)
-            .expect("Fail to set node");
+            .data_center(7)
+            .data_center_bits(3)
+            .node(1)
+            .node_bits(1)
+            .build()
+            .expect("Failed to build id worker config");
 
-        let id_worker = IdWorkerGenerator::generate(options).expect("Failed to generate id worker");
+        let id_worker = IdWorkerGenerator::generate(config).expect("Failed to generate id worker");
         for _ in 0..1000 {
             println!(
                 "id: {}",
@@ -26,16 +27,17 @@ mod generator_tests {
 
     #[test]
     fn test_faster() {
-        let options = IdWorkerOptions::new()
+        let config = IdWorkerConfig::builder()
             .mode(Mode::Faster)
             .epoch(1)
-            .expect("Fail to set epoch")
-            .data_center(7, 3)
-            .expect("Fail to set data center")
-            .node(1, 1)
-            .expect("Fail to set node");
+            .data_center(7)
+            .data_center_bits(3)
+            .node(1)
+            .node_bits(1)
+            .build()
+            .expect("Failed to build id worker config");
 
-        let id_worker = IdWorkerGenerator::generate(options).expect("Failed to generate id worker");
+        let id_worker = IdWorkerGenerator::generate(config).expect("Failed to generate id worker");
         for _ in 0..1000 {
             println!(
                 "id: {}",
@@ -46,16 +48,17 @@ mod generator_tests {
 
     #[test]
     fn test_fastest() {
-        let options = IdWorkerOptions::new()
+        let config = IdWorkerConfig::builder()
             .mode(Mode::Fastest)
             .epoch(1)
-            .expect("Fail to set epoch")
-            .data_center(7, 3)
-            .expect("Fail to set data center")
-            .node(1, 1)
-            .expect("Fail to set node");
+            .data_center(7)
+            .data_center_bits(3)
+            .node(1)
+            .node_bits(1)
+            .build()
+            .expect("Failed to build id worker config");
 
-        let id_worker = IdWorkerGenerator::generate(options).expect("Failed to generate id worker");
+        let id_worker = IdWorkerGenerator::generate(config).expect("Failed to generate id worker");
         for _ in 0..1000 {
             println!(
                 "id: {}",
@@ -66,17 +69,18 @@ mod generator_tests {
 
     #[test]
     fn test_normal_multithread() {
-        let options = IdWorkerOptions::new()
+        let config = IdWorkerConfig::builder()
             .mode(Mode::Normal)
             .epoch(1)
-            .expect("Fail to set epoch")
-            .data_center(7, 3)
-            .expect("Fail to set data center")
-            .node(1, 1)
-            .expect("Fail to set node");
+            .data_center(7)
+            .data_center_bits(3)
+            .node(1)
+            .node_bits(1)
+            .build()
+            .expect("Failed to build id worker config");
 
         let id_worker =
-            Arc::new(IdWorkerGenerator::generate(options).expect("Failed to generate id worker"));
+            Arc::new(IdWorkerGenerator::generate(config).expect("Failed to generate id worker"));
         let mut handles = vec![];
 
         for _ in 0..10 {
@@ -101,23 +105,24 @@ mod generator_tests {
         assert_eq!(all_ids.len(), 1000);
 
         // 验证 ID 的唯一性
-        let unique_ids: std::collections::HashSet<u64> = all_ids.into_iter().collect();
+        let unique_ids: std::collections::HashSet<i64> = all_ids.into_iter().collect();
         assert_eq!(unique_ids.len(), 1000);
     }
 
     #[test]
     fn test_faster_multithread() {
-        let options = IdWorkerOptions::new()
+        let config = IdWorkerConfig::builder()
             .mode(Mode::Faster)
             .epoch(1)
-            .expect("Fail to set epoch")
-            .data_center(7, 3)
-            .expect("Fail to set data center")
-            .node(1, 1)
-            .expect("Fail to set node");
+            .data_center(7)
+            .data_center_bits(3)
+            .node(1)
+            .node_bits(1)
+            .build()
+            .expect("Failed to build id worker config");
 
         let id_worker =
-            Arc::new(IdWorkerGenerator::generate(options).expect("Failed to generate id worker"));
+            Arc::new(IdWorkerGenerator::generate(config).expect("Failed to generate id worker"));
         let mut handles = vec![];
 
         for _ in 0..10 {
@@ -142,23 +147,24 @@ mod generator_tests {
         assert_eq!(all_ids.len(), 1000);
 
         // 验证 ID 的唯一性
-        let unique_ids: std::collections::HashSet<u64> = all_ids.into_iter().collect();
+        let unique_ids: std::collections::HashSet<i64> = all_ids.into_iter().collect();
         assert_eq!(unique_ids.len(), 1000);
     }
 
     #[test]
     fn test_fastest_multithread() {
-        let options = IdWorkerOptions::new()
+        let config = IdWorkerConfig::builder()
             .mode(Mode::Fastest)
             .epoch(1)
-            .expect("Fail to set epoch")
-            .data_center(7, 3)
-            .expect("Fail to set data center")
-            .node(1, 1)
-            .expect("Fail to set node");
+            .data_center(7)
+            .data_center_bits(3)
+            .node(1)
+            .node_bits(1)
+            .build()
+            .expect("Failed to build id worker config");
 
         let id_worker =
-            Arc::new(IdWorkerGenerator::generate(options).expect("Failed to generate id worker"));
+            Arc::new(IdWorkerGenerator::generate(config).expect("Failed to generate id worker"));
         let mut handles = vec![];
 
         for _ in 0..10 {
@@ -183,7 +189,7 @@ mod generator_tests {
         assert_eq!(all_ids.len(), 1000);
 
         // 验证 ID 的唯一性
-        let unique_ids: std::collections::HashSet<u64> = all_ids.into_iter().collect();
+        let unique_ids: std::collections::HashSet<i64> = all_ids.into_iter().collect();
         assert_eq!(unique_ids.len(), 1000);
     }
 }
