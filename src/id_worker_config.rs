@@ -18,7 +18,7 @@ pub enum Mode {
 
 #[derive(Debug, Serialize, Deserialize, Clone, TypedBuilder)]
 #[builder(build_method(into = Result<IdWorkerConfig, IdWorkerError>))]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub struct IdWorkerConfig {
     /// 模式(默认为普通模式)
     #[builder(default = Mode::Normal)]
