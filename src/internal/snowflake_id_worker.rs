@@ -39,7 +39,7 @@ impl SnowflakeIdWorker {
             ..
         } = config;
         let worker_bits = data_center_bits + node_bits;
-        let worker = ((data_center as u16) << config.node_bits) + node as u16;
+        let worker = ((data_center as u16) << node_bits) + node as u16;
         let sequence_mask = (1 << sequence_bits) - 1;
         let timestamp_shift = worker_bits + sequence_bits;
 
