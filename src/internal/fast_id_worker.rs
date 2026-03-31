@@ -1,7 +1,7 @@
+use crate::IdWorkerError;
 use crate::id_worker::IdWorker;
 use crate::id_worker_config::{IdWorkerConfig, Mode};
 use crate::internal::id_worker_utils::IdWorkerUtils;
-use crate::IdWorkerError;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 pub struct FastIdWorker {
@@ -74,9 +74,10 @@ impl IdWorker for FastIdWorker {
                 let timestamp = match self.mode {
                     Mode::Faster => {
                         IdWorkerUtils::calc_timestamp(self.epoch, self.epoch_precision)?
-                            >> self.timestamp_shift + 1
+                            >> self.timestamp_shift
                     }
-                    _ => last_id >> self.timestamp_shift + 1,
+                    // Mode::Fastest
+                    _ => (last_id + 1) >> self.timestamp_shift,
                 };
 
                 IdWorkerUtils::calc_id(
