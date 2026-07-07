@@ -1,5 +1,5 @@
 use crate::{IdWorker, IdWorkerConfig, IdWorkerError, IdWorkerGenerator};
-use log::debug;
+use tracing::debug;
 use std::sync::{Arc, RwLock};
 
 static ID_WORKER: RwLock<Option<Arc<dyn IdWorker>>> = RwLock::new(None);
