@@ -12,7 +12,7 @@ repository = "https://github.com/rusthing/idworker"
 readme = "README.adoc"
 
 [dependencies]
-thiserror = "2.0.19"
+thiserror = "2.0.20"
 tracing = { version = "0.1.44" }
 serde = { version = "1.0.229", features = ["derive"] }
 typed-builder = "0.23.2"
