@@ -1,5 +1,7 @@
 use crate::{IdWorker, IdWorkerConfig, IdWorkerError, IdWorkerGenerator};
 use arc_swap::ArcSwapOption;
+use config::Value;
+use std::collections::HashMap;
 use std::sync::Arc;
 use tracing::debug;
 
@@ -15,10 +17,19 @@ fn get_id_worker() -> Result<Arc<dyn IdWorker>, IdWorkerError> {
 }
 
 /// 初始化/更新id生成器
-pub fn setup_id_worker(id_worker_config: IdWorkerConfig) -> Result<(), IdWorkerError> {
+pub fn setup_id_worker(
+    id_worker_config: IdWorkerConfig,
+    changed: &Option<HashMap<String, Value>>,
+) -> Result<(), IdWorkerError> {
     debug!("setup id worker...");
-    let id_worker = IdWorkerGenerator::generate(id_worker_config)?;
-    ID_WORKER.store(Some(Arc::new(IdWorkerRef(id_worker))));
+    if changed
+        .as_ref()
+        .map(|changed| changed.contains_key("id-worker"))
+        .unwrap_or(true)
+    {
+        let id_worker = IdWorkerGenerator::generate(id_worker_config)?;
+        ID_WORKER.store(Some(Arc::new(IdWorkerRef(id_worker))));
+    }
     Ok(())
 }
 
