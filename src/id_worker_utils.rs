@@ -1,30 +1,28 @@
 use crate::{IdWorker, IdWorkerConfig, IdWorkerError, IdWorkerGenerator};
+use arc_swap::ArcSwapOption;
+use std::sync::Arc;
 use tracing::debug;
-use std::sync::{Arc, RwLock};
 
-static ID_WORKER: RwLock<Option<Arc<dyn IdWorker>>> = RwLock::new(None);
+struct IdWorkerRef(Arc<dyn IdWorker>);
 
-/// 获取当前配置的只读访问
-pub fn get_id_worker() -> Result<Arc<dyn IdWorker>, IdWorkerError> {
-    let read_lock = ID_WORKER.read().map_err(|_| IdWorkerError::GetIdWorker())?;
-    read_lock
-        .as_ref()
-        .map(Arc::clone)
+static ID_WORKER: ArcSwapOption<IdWorkerRef> = ArcSwapOption::const_empty();
+
+fn get_id_worker() -> Result<Arc<dyn IdWorker>, IdWorkerError> {
+    ID_WORKER
+        .load_full()
+        .map(|r| Arc::clone(&r.0))
         .ok_or(IdWorkerError::GetIdWorker())
 }
 
-/// 设置配置
-pub fn set_id_worker(value: Arc<dyn IdWorker>) -> Result<(), IdWorkerError> {
-    let mut write_lock = ID_WORKER
-        .write()
-        .map_err(|_| IdWorkerError::SetIdWorker())?;
-    *write_lock = Some(value);
+/// 初始化/更新id生成器
+pub fn setup_id_worker(id_worker_config: IdWorkerConfig) -> Result<(), IdWorkerError> {
+    debug!("setup id worker...");
+    let id_worker = IdWorkerGenerator::generate(id_worker_config)?;
+    ID_WORKER.store(Some(Arc::new(IdWorkerRef(id_worker))));
     Ok(())
 }
 
-/// 初始化id生成器
-pub fn init_id_worker(id_worker_config: IdWorkerConfig) -> Result<(), IdWorkerError> {
-    debug!("init id worker...");
-    let id_worker = IdWorkerGenerator::generate(id_worker_config)?;
-    set_id_worker(id_worker)
+/// 生成下一个id
+pub fn next_id() -> Result<u64, IdWorkerError> {
+    get_id_worker()?.next_id()
 }

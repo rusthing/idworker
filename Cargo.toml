@@ -1,6 +1,6 @@
 [package]
 name = "idworker"
-version = "1.1.2"
+version = "1.2.0"
 edition = "2024"
 authors = ["zbz"]
 keywords = ["id", "idworker", "generator", "idgenerator", "snowflake"]
@@ -16,6 +16,7 @@ thiserror = "2.0.20"
 tracing = { version = "0.1.44" }
 serde = { version = "1.0.229", features = ["derive"] }
 typed-builder = "0.23.2"
+arc-swap = "1.9.2"
 
 [dev-dependencies]
 criterion = "0.8.2"
