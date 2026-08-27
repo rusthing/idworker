@@ -7,7 +7,7 @@ use tracing::debug;
 
 struct IdWorkerRef(Arc<dyn IdWorker>);
 
-static KEY: &str = "id-worker";
+const KEY: &str = "id-worker";
 static ID_WORKER: ArcSwapOption<IdWorkerRef> = ArcSwapOption::const_empty();
 
 fn get_id_worker() -> Result<Arc<dyn IdWorker>, IdWorkerError> {
