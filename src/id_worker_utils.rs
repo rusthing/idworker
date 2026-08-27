@@ -7,6 +7,7 @@ use tracing::debug;
 
 struct IdWorkerRef(Arc<dyn IdWorker>);
 
+static KEY: &str = "id-worker";
 static ID_WORKER: ArcSwapOption<IdWorkerRef> = ArcSwapOption::const_empty();
 
 fn get_id_worker() -> Result<Arc<dyn IdWorker>, IdWorkerError> {
@@ -24,7 +25,7 @@ pub fn setup_id_worker(
     debug!("setup id worker...");
     if changed
         .as_ref()
-        .map(|changed| changed.contains_key("id-worker"))
+        .map(|changed| changed.contains_key(KEY))
         .unwrap_or(true)
     {
         let id_worker = IdWorkerGenerator::generate(id_worker_config)?;
