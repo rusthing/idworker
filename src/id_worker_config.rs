@@ -16,6 +16,8 @@ pub enum Mode {
     Fastest,
 }
 
+pub const ID_WORKER_CONFIG_KEY: &str = "id-worker";
+
 #[derive(Debug, Serialize, Deserialize, Clone, TypedBuilder)]
 #[builder(build_method(into = Result<IdWorkerConfig, IdWorkerError>))]
 #[serde(default, rename_all = "kebab-case")]

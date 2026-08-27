@@ -1,4 +1,4 @@
-use crate::{IdWorker, IdWorkerConfig, IdWorkerError, IdWorkerGenerator};
+use crate::{IdWorker, IdWorkerConfig, IdWorkerError, IdWorkerGenerator, ID_WORKER_CONFIG_KEY};
 use arc_swap::ArcSwapOption;
 use config::Value;
 use std::collections::HashMap;
@@ -8,7 +8,6 @@ use wheel_rs::config_utils::has_config_changed;
 
 struct IdWorkerRef(Arc<dyn IdWorker>);
 
-const KEY: &str = "id-worker";
 static ID_WORKER: ArcSwapOption<IdWorkerRef> = ArcSwapOption::const_empty();
 
 fn get_id_worker() -> Result<Arc<dyn IdWorker>, IdWorkerError> {
@@ -26,7 +25,7 @@ pub fn setup_id_worker(
     debug!("setup id worker...");
     if changed
         .as_ref()
-        .map(|changed| has_config_changed(KEY, changed))
+        .map(|changed| has_config_changed(ID_WORKER_CONFIG_KEY, changed))
         .unwrap_or(true)
     {
         let id_worker = IdWorkerGenerator::generate(id_worker_config)?;
