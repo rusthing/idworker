@@ -1,6 +1,6 @@
 [package]
 name = "idworker"
-version = "1.2.2"
+version = "1.3.0"
 edition = "2024"
 authors = ["zbz"]
 keywords = ["id", "idworker", "generator", "idgenerator", "snowflake"]
@@ -11,13 +11,20 @@ homepage = "https://github.com/rusthing/idworker"
 repository = "https://github.com/rusthing/idworker"
 readme = "README.adoc"
 
+[features]
+utils = ["dep:wheel-rs", "dep:config", "dep:arc-swap"]
+
 [dependencies]
 thiserror = "2.0.20"
 tracing = { version = "0.1.44" }
 serde = { version = "1.0.229", features = ["derive"] }
 typed-builder = "0.23.2"
-config = "0.15.25"
-arc-swap = "1.9.2"
+
+arc-swap = { version = "1.9.2", optional = true }
+config = { version = "0.15.25", optional = true }
+
+wheel-rs = { version = "1.9.5", optional = true }
+
 
 [dev-dependencies]
 criterion = "0.8.2"
@@ -29,3 +36,7 @@ harness = false
 [[bench]]
 name = "normal_benches"
 harness = false
+
+[patch.crates-io]
+wheel-rs = { path = "../wheel-rs" }
+

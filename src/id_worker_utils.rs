@@ -4,6 +4,7 @@ use config::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tracing::debug;
+use wheel_rs::config_utils::has_config_changed;
 
 struct IdWorkerRef(Arc<dyn IdWorker>);
 
@@ -25,7 +26,7 @@ pub fn setup_id_worker(
     debug!("setup id worker...");
     if changed
         .as_ref()
-        .map(|changed| changed.contains_key(KEY))
+        .map(|changed| has_config_changed(KEY, changed))
         .unwrap_or(true)
     {
         let id_worker = IdWorkerGenerator::generate(id_worker_config)?;
