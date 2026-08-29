@@ -18,7 +18,7 @@ pub enum Mode {
 
 pub const ID_WORKER_CONFIG_KEY: &str = "id-worker";
 
-#[derive(Debug, Serialize, Deserialize, Clone, TypedBuilder)]
+#[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
 #[builder(build_method(into = Result<IdWorkerConfig, IdWorkerError>))]
 #[serde(default, rename_all = "kebab-case")]
 pub struct IdWorkerConfig {

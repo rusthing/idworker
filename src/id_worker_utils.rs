@@ -3,7 +3,7 @@ use arc_swap::ArcSwapOption;
 use config::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
-use tracing::debug;
+use tracing::info;
 use wheel_rs::config_utils::has_config_changed;
 
 struct IdWorkerRef(Arc<dyn IdWorker>);
@@ -22,7 +22,7 @@ pub fn setup_id_worker(
     id_worker_config: IdWorkerConfig,
     changed: &Option<HashMap<String, Value>>,
 ) -> Result<(), IdWorkerError> {
-    debug!("setup id worker...");
+    info!("setup id worker...: {id_worker_config:?}");
     if changed
         .as_ref()
         .map(|changed| has_config_changed(ID_WORKER_CONFIG_KEY, changed))
