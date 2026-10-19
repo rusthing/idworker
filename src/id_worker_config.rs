@@ -38,9 +38,13 @@ pub struct IdWorkerConfig {
     /// 数据中心ID位数(默认为0)
     #[builder(default = 0)]
     pub data_center_bits: u8,
-    /// 节点ID(默认为0)
-    #[builder(default = 0)]
-    pub node: u8,
+    /// 节点ID
+    ///
+    /// `None` 表示未指定：直接使用时按 0 处理；由框架（如 robotech）初始化时，
+    /// 可据此触发自动分配，从而把 0 号留给真正需要它的实例。
+    #[builder(default, setter(strip_option))]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub node: Option<u8>,
     /// 节点ID位数(默认为4)
     #[builder(default = 4)]
     pub node_bits: u8,
@@ -90,11 +94,13 @@ impl From<IdWorkerConfig> for Result<IdWorkerConfig, IdWorkerError> {
             )))?;
         }
         let max_node = (1u16 << node_bits) - 1;
-        if node as u16 > max_node {
-            Err(IdWorkerError::Config(format!(
-                "node {} is out of range for {} bits",
-                node, node_bits
-            )))?;
+        if let Some(node) = node {
+            if node as u16 > max_node {
+                Err(IdWorkerError::Config(format!(
+                    "node {} is out of range for {} bits",
+                    node, node_bits
+                )))?;
+            }
         }
 
         let max_sequence_bits = 64 - TIMESTAMP_MIN_BITS - data_center_bits - node_bits;

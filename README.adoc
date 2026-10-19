@@ -28,7 +28,7 @@ Add this to your `Cargo.toml`:
 ----
 [dependencies]
 # IdWorkerGenerator / setup_id_worker / next_id 在 utils feature 下
-idworker = { version = "1.3.1", features = ["utils"] }
+idworker = { version = "1.4.0", features = ["utils"] }
 ----
 
 == Usage
@@ -53,6 +53,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 ----
+
+NOTE: `node` 的类型是 `Option<u8>`：不设置时为 `None`，生成器按 0 处理。框架层
+（如 robotech）用 `None` 表示"由框架自动分配"，因此 **0 是一个合法且可独立使用的
+节点编号**，不会被当作特殊标记。
 
 NOTE: 位宽预算：`data_center_bits + node_bits + sequence_bits` 之和越大，留给时间戳的高位越少。
 当前时间戳约占 45 位，主键按 i64 存储时三者之和不应超过 18 位（默认 0 + 4 + 12 = 16）。
