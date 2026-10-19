@@ -22,12 +22,13 @@ A high-performance distributed ID generator library for Rust, implementing Snowf
 
 == Installation
 
-Add this to your [Cargo.toml](file:///Users/zbz/workspace/rusthing/idworker/Cargo.toml):
+Add this to your `Cargo.toml`:
 
 [source,toml]
 ----
 [dependencies]
-idworker = "0.3.0"
+# IdWorkerGenerator / setup_id_worker / next_id 在 utils feature 下
+idworker = { version = "1.3.1", features = ["utils"] }
 ----
 
 == Usage
@@ -36,37 +37,44 @@ idworker = "0.3.0"
 
 [source,rust]
 ----
-use idworker::generator::IdWorkerGenerator;
-use idworker::options::{Mode, Options};
+use idworker::{IdWorkerConfig, IdWorkerGenerator, Mode};
 
-fn main() {
-    let options = Options::new()
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let config = IdWorkerConfig::builder()
         .mode(Mode::Normal)
-        .epoch(1609459200000) // Custom epoch timestamp
-        .data_center(1, 5)   // data_center_id, data_center_bits
-        .node(1, 5);         // node_id, node_bits
+        .epoch(1609459200000)      // 基准时间戳（毫秒）
+        .data_center(0)            // 数据中心编号
+        .node(1)                   // 节点编号（同一 epoch 下每个实例必须不同）
+        .build()?;
 
-    let id_worker = IdWorkerGenerator::generate(options);
-    let id = id_worker.next_id();
-    println!("Generated ID: {}", id);
+    let id_worker = IdWorkerGenerator::generate(config)?;
+    let id = id_worker.next_id()?;
+    println!("Generated ID: {id}");
+    Ok(())
 }
 ----
 
-=== Performance Modes
+NOTE: 位宽预算：`data_center_bits + node_bits + sequence_bits` 之和越大，留给时间戳的高位越少。
+当前时间戳约占 45 位，主键按 i64 存储时三者之和不应超过 18 位（默认 0 + 4 + 12 = 16）。
+超出后生成的 ID 会越过 `i64::MAX`，落库为负数。
 
+=== Performance Modes
 [source,rust]
 ----
-// Normal mode - Standard performance
-let normal_options = Options::new().mode(Mode::Normal);
-let normal_worker = IdWorkerGenerator::generate(normal_options);
+// Normal - 每次取当前时间戳，多实例/重启安全（分布式部署只用这个）
+let normal = IdWorkerGenerator::generate(
+    IdWorkerConfig::builder().mode(Mode::Normal).build()?
+)?;
 
-// Faster mode - High performance
-let faster_options = Options::new().mode(Mode::Faster);
-let faster_worker = IdWorkerGenerator::generate(faster_options);
+// Faster - 初始化时取一次时间戳，之后纯自增；仅适合单进程
+let faster = IdWorkerGenerator::generate(
+    IdWorkerConfig::builder().mode(Mode::Faster).build()?
+)?;
 
-// Fastest mode - Maximum performance
-let fastest_options = Options::new().mode(Mode::Fastest);
-let fastest_worker = IdWorkerGenerator::generate(fastest_options);
+// Fastest - 序列号用尽后直接给时间戳 +1，可能跑到未来；仅适合单进程
+let fastest = IdWorkerGenerator::generate(
+    IdWorkerConfig::builder().mode(Mode::Fastest).build()?
+)?;
 ----
 
 == Performance
@@ -84,18 +92,18 @@ All ID generators are thread-safe and can be used across multiple threads:
 
 [source,rust]
 ----
-use std::sync::Arc;
+use idworker::{IdWorkerConfig, IdWorkerGenerator, Mode};
 use std::thread;
 
-let id_worker = Arc::new(IdWorkerGenerator::generate(options));
-let mut handles = vec![];
+// generate 返回的是 Arc<dyn IdWorker>，可直接跨线程共享
+let id_worker = IdWorkerGenerator::generate(
+    IdWorkerConfig::builder().mode(Mode::Normal).build()?
+)?;
 
+let mut handles = vec![];
 for _ in 0..10 {
-    let worker = Arc::clone(&id_worker);
-    let handle = thread::spawn(move || {
-        worker.next_id()
-    });
-    handles.push(handle);
+    let worker = id_worker.clone();
+    handles.push(thread::spawn(move || worker.next_id()));
 }
 ----
 

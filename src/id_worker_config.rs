@@ -20,7 +20,7 @@ pub const ID_WORKER_CONFIG_KEY: &str = "id-worker";
 
 #[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
 #[builder(build_method(into = Result<IdWorkerConfig, IdWorkerError>))]
-#[serde(default, rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case", deny_unknown_fields)]
 pub struct IdWorkerConfig {
     /// 模式(默认为普通模式)
     #[builder(default = Mode::Normal)]
