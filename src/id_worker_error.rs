@@ -10,4 +10,8 @@ pub enum IdWorkerError {
     GetIdWorker(),
     #[error("系统时钟错误: {0}")]
     SystemTime(#[from] SystemTimeError),
+    #[error(
+        "时间戳下溢: 当前时间 {now} 早于基准时间 {epoch}，请检查 epoch 与 epoch-precision 是否同量纲"
+    )]
+    TimestampUnderflow { now: u64, epoch: u64 },
 }

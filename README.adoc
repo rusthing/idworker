@@ -60,7 +60,35 @@ NOTE: `node` 的类型是 `Option<u8>`：不设置时为 `None`，生成器按 0
 
 NOTE: 位宽预算：`data_center_bits + node_bits + sequence_bits` 之和越大，留给时间戳的高位越少。
 当前时间戳约占 45 位，主键按 i64 存储时三者之和不应超过 18 位（默认 0 + 4 + 12 = 16）。
-超出后生成的 ID 会越过 `i64::MAX`，落库为负数。
+`IdWorkerConfig::validate()` 会按**当前时间**算出时间戳位数并拦截越界配置（报错而不是
+发出负数 ID）；`IdWorkerGenerator::generate` 与 builder 的 `build()` 都会调用它。
+
+=== Timestamp Precision
+
+`epoch_precision` 是时间戳精度的十进制指数：单位 = `10^(3 - precision)` 微秒。
+
+[cols="1,1,1"]
+|===
+|precision | 单位 | 每毫秒刻度数
+
+|1（默认） | 0.1ms | 10
+|0 | 1ms | 1
+|-1 | 10ms | 0.1
+|-2 | 100ms | 0.01
+|===
+
+精度越粗，时间戳越小、留给 worker/序列号的位宽越多；但它同时是**时间轴的定义**，
+`epoch` 要按同量纲传入，且上线后不要再改（改了新 ID 会与旧 ID 不可比）。
+
+=== Capacity
+
+每个时间戳刻度内可用 `2^sequence_bits` 个序列号（默认 4096），刻度用尽后**等待时钟
+走到下一个刻度**，不会把序列号回绕——回绕会在同一刻度内重发已经用过的 ID。
+按默认精度（每毫秒 10 个刻度）算，稳态上限约 `4096 × 10 = 40960 个/毫秒`；短时爆发
+可以更高（超出部分靠顺延时间戳），实测连续 50 万条约 7.9 万/毫秒且无重复。
+
+时钟停住或回拨导致等不到下一个刻度时，时间戳顺延一格（宁可让 ID 的绝对时间略微
+超前，也不产生重复 ID），并限流告警。
 
 === Performance Modes
 [source,rust]
@@ -70,7 +98,8 @@ let normal = IdWorkerGenerator::generate(
     IdWorkerConfig::builder().mode(Mode::Normal).build()?
 )?;
 
-// Faster - 初始化时取一次时间戳，之后纯自增；仅适合单进程
+// Faster - 初始化时取一次时间戳，之后纯自增；序列号用尽时取当前时间戳
+//           （等不到就顺延），仅适合单进程
 let faster = IdWorkerGenerator::generate(
     IdWorkerConfig::builder().mode(Mode::Faster).build()?
 )?;
@@ -80,6 +109,9 @@ let fastest = IdWorkerGenerator::generate(
     IdWorkerConfig::builder().mode(Mode::Fastest).build()?
 )?;
 ----
+
+NOTE: 三种模式都保证时间戳严格递增，因此同一进程内不会重号；`Faster` / `Fastest`
+只在初始化时读一次时钟，**多副本部署会撞号**，分布式服务只应使用 `Normal`。
 
 == Performance
 
