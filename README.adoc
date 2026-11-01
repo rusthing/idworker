@@ -59,7 +59,9 @@ NOTE: `node` 的类型是 `Option<u8>`：不设置时为 `None`，生成器按 0
 节点编号**，不会被当作特殊标记。
 
 NOTE: 位宽预算：`data_center_bits + node_bits + sequence_bits` 之和越大，留给时间戳的高位越少。
-当前时间戳约占 45 位，主键按 i64 存储时三者之和不应超过 18 位（默认 0 + 4 + 12 = 16）。
+当前时间戳约占 44 位，主键按 i64 存储时三者之和不应超过 19 位（默认 0 + 6 + 12 = 18）。
+`node_bits` 默认 6 位（64 个节点）；不要盲目加到 7——那会卡满 63 位，时间戳在约 2031 年
+进位到 45 位后校验就会失败。需要更多节点请改用更粗的 `epoch_precision` 或更大的 `epoch`。
 `IdWorkerConfig::validate()` 会按**当前时间**算出时间戳位数并拦截越界配置（报错而不是
 发出负数 ID）；`IdWorkerGenerator::generate` 与 builder 的 `build()` 都会调用它。
 

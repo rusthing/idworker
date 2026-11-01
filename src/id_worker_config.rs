@@ -54,8 +54,15 @@ pub struct IdWorkerConfig {
     #[builder(default, setter(strip_option))]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub node: Option<u8>,
-    /// 节点ID位数(默认为4)
-    #[builder(default = 4)]
+    /// 节点ID位数(默认为6，即 64 个节点编号)
+    ///
+    /// 位宽预算：时间戳按当前时间约占 44 位，`data_center_bits + node_bits` +
+    /// `sequence_bits` 要留在这 19 位之内（默认 `0 + 6 + 12 = 18`）。
+    ///
+    /// 取 6 而不是 7：7 位刚好卡满 63 位，时间戳一旦进位到 45 位（约 2031 年）
+    /// `validate()` 就会失败、服务起不来；6 位能撑到时间戳 45 位仍不越界。
+    /// 需要更多编号应降低 `epoch_precision` 或调大 `epoch`，而不是继续加位宽。
+    #[builder(default = 6)]
     pub node_bits: u8,
     /// 序列号位数(默认为12)
     #[builder(default = 12)]
@@ -168,7 +175,7 @@ impl Default for IdWorkerConfig {
             data_center: 0,
             data_center_bits: 0,
             node: None,
-            node_bits: 4,
+            node_bits: 6,
             sequence_bits: 12,
         }
     }
